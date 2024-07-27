@@ -1,0 +1,274 @@
+---
+title: "Incomplete financial markets, suboptimal fiscal policy, and growth"
+author: "Esteban Degetau"
+date: "`r Sys.Date()`"
+format: pdf
+execute: 
+  echo: false
+  message: false
+  warning: false
+  cache: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+#| cache: false
+
+rm(list = ls())
+gc()
+
+pacman::p_load(tidyverse, here, gtsummary, kableExtra, fixest, wbstats, rnaturalearth, labelled, readxl, sf)
+
+theme_set(theme_minimal())
+
+```
+
+
+
+```{r}
+#| label: data
+#| include: false
+
+load(here("data/GKS.RData"))
+
+allocation <- read_excel(here("data/Allocation.xlsx")) 
+    
+GKS <- GKS |>
+    mutate(
+        income_level = factor(income_level, levels = c("Low income", "Lower middle income", "Upper middle income", "High income"))
+    )
+
+dict <- generate_dictionary(GKS) |>
+    mutate(
+        kind = case_when(
+            str_detect(label, "tax|rev") ~ "Revenue",
+            str_detect(label, "expenditure") ~ "Expenditure",
+            str_detect(label, "growth") ~ "Dependant",
+            TRUE ~ "Other"
+        )
+    )
+
+```
+
+
+```{r}
+#| label: tbl-alloc
+#| tbl-cap: Allocation of theoretical variables
+
+
+# Show NAs as empty cells in kable outputs
+options(knitr.kable.NA = "")
+
+allocation |>
+    kable() |>
+    kableExtra::column_spec(1, width = "4cm") |>
+    column_spec(2:3, width = "5cm") |>
+    kable_styling("striped") 
+
+
+```
+
+```{r}
+
+five_years <- tibble(
+    date = 2000:2019,
+    period = floor((date - 2000) / 5) + 1
+
+)
+
+long_run <- GKS |>
+    filter(between(date, 2000, 2019)) |>
+    left_join(five_years, by = "date") |>
+    group_by(period, country, income_level_iso3c) |>
+    summarise(
+        across(
+            where(is.numeric) & !matches("date|lon|lat"),
+            ~ mean(., na.rm = TRUE)
+        )
+    ) |>
+    ungroup() |>
+    rename(date = period) |>
+    labelled::copy_labels_from(GKS) 
+
+
+
+long <- long_run |>
+    select(
+        date,
+        country,
+        budget_surplus,
+        distortionary_taxation,
+        non_distortionary_taxation,
+        other_revenues,
+        productive_expenditure,
+        unproductive_expenditure,
+        other_expenditure,
+        gdp_pc_growth,
+        labor_growth
+    ) |>
+    pivot_longer(
+        where(is.numeric) & !matches("date|lon|lat")
+    ) |>
+    left_join(dict, by = c("name" = "variable")) 
+
+
+
+
+
+year_theoretical <- long |>
+  group_by(date, name) |>
+  summarise(countries = n_distinct(country[!is.na(value)])) |>
+  ungroup() 
+
+
+
+
+```
+
+```{r}
+#| label: tbl-countries
+#| tbl-cap: Countries available for each theoretical variable
+
+long |>
+  drop_na(value) |>
+  group_by(label, kind) |>
+  summarise(Countries = n_distinct(country)) |>
+  arrange(kind) |>
+  select(Variable = label, Countries) |>
+  kable()
+
+```
+
+
+```{r}
+#| eval: false
+
+
+year_theoretical |>
+  filter(date < 2020) |>
+  ggplot(aes(date, countries, color = name)) +
+  geom_line() 
+
+year_theoretical |>
+  group_by(date) |>
+  summarise(
+    working_countries = min(countries)
+  ) |>
+  filter(date < 2020) |>
+    ggplot(aes(date, working_countries)) +
+    geom_line() 
+```
+
+
+
+```{r}
+#| label: tbl-summary
+#| tbl-cap: Summary statistics (% of GDP unless noted)
+
+
+long |>
+    group_by(label, kind) |>
+    summarise(
+        Mean = mean(value, na.rm = TRUE),
+        SD = sd(value, na.rm = TRUE),
+        Min = min(value, na.rm = TRUE) |> round(2),
+        `Min Country` = country[which.min(value)],
+
+        Max = max(value, na.rm = TRUE) |> round(2),
+        `Max Country` = country[which.max(value)]
+    ) |>
+    arrange(kind) |>
+    select(!kind) |>
+    rename(Variable = label) |>
+    kable(digits = 2, format.args = list(big.mark = ",")) |>
+    # Set font size
+    kableExtra::kable_styling(font_size = 10)
+
+
+
+
+```
+
+
+```{r}
+
+income_levels <- wbstats::wb_income_levels()
+
+long_run |>
+    select(
+        gdp_pc_growth,
+        labor_growth,
+        budget_surplus,
+        distortionary_taxation,
+        non_distortionary_taxation,
+        other_revenues,
+        productive_expenditure,
+        unproductive_expenditure,
+        other_expenditure,
+
+        income_level_iso3c
+    ) |>
+    drop_na() |>
+    tbl_summary(
+        by = income_level_iso3c,
+        statistic = list(all_continuous() ~ "{mean} ({sd})")
+    )
+
+```
+
+```{r}
+#| label: fig-countries
+#| fig-cap: Countries with some available data during 2000-2019
+#| fig-height: 5
+#| fig-width: 8
+#| fig-subcap: 
+#|   - By Income Level
+#|   - Years available
+
+ne <- ne_countries(returnclass = "sf") 
+
+available <- GKS |>
+    filter(between(date, 2000, 2019)) |>
+    drop_na(
+        budget_surplus,
+        distortionary_taxation,
+        non_distortionary_taxation,
+        other_revenues,
+        productive_expenditure,
+        unproductive_expenditure,
+        gdp_pc_growth,
+        labor_growth
+
+    ) |>
+    right_join(ne, by = c("iso3c" = "iso_a3_eh")) 
+
+
+available |>
+    st_sf() |>
+    ggplot(aes(fill = income_level)) +
+    geom_sf() +
+    labs(fill = "") +
+    theme(legend.position = "bottom") +
+    scale_fill_viridis_d(option = "plasma")
+
+
+available |>
+    group_by(iso3c) |>
+    summarise(years = n_distinct(date)) |>
+    ungroup() |>
+    right_join(ne, by = c("iso3c" = "iso_a3_eh")) |>
+        mutate(
+        years = case_when(
+            years > 0 ~ years,
+            T ~ NA
+        )
+    ) |>
+    st_sf() |>
+    ggplot(aes(fill = years)) +
+    geom_sf() +
+    scale_fill_viridis_c(option = "plasma", na.value = "white") +
+    labs(fill = "Years available") +
+    theme(legend.position = "bottom")
+
+```

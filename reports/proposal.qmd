@@ -1,0 +1,22 @@
+---
+title: "Incomplete financial markets, suboptimal fiscal policy, and growth"
+subtitle: "Research proposal"
+author: "Esteban Degetau"
+date: "2024-07-01"
+format: pdf
+bibliography: references.bib
+---
+
+**Research question**: What are the growth consequences of procyclical fiscal policy in emerging economies?
+
+**Motivation**: A procyclical fiscal policy implies decreasing government spending and increasing tax rates during recessions. Indeed, fiscal procyclicality diverts from orthodox macroeconomic prescriptions. On one hand, Keynesian economics prescribes countercyclical fiscal policies to alleviate demand crises, while Neoclassical economics argues for acyclical fiscal policies. Thus, procyclical fiscal policy is suboptimal under either school of economic thought. However, the emprirical regularity of procyclical fiscal policy in developing economies has been noted at least since @talvi2005.
+
+The macroeconomics literature has rationalized such observation through an incomplete financial markets argument: because developing countries face countercyclical spreads on their debt, they cannot smooth consumption through debt during recessions reliably, and thus resort to tax increases [@cuadra2010].
+
+Additional work on the procyclicality includes @mendoza2012, who provide a general equilibrium model that incorporates business cycles with sovereign default to explain why defaulting economies experience deep recessions as well. @phuccanh2018 shows that emerging economies' fiscal policy is more efficient when they also hold strong institutions, especially thorugh crowding-in effects. @born2020 show that the effect of government spending on spreads is only increasing for high levels of withstanding debt. However, the cost of incomplete markets in terms of lost growth is yet unkown.
+
+**Expected contribution:** Because procyclical fiscal policy is a feature of incomplete financial markets, gaining an insight on its costs in terms of growth will help to understand the extend to which institutions like the IMF ought to increase their borrowing supply to emerging economies under fiscal stress. Having a more precise estimate on the cost of incomplete markets will provide evidence on whether current financial aid is at optimal levels, or whether it is worth providing additional aid.
+
+Indeed, providing sufficient aid to developing economies is crucial, as sound macroeconmic performance is a necessary condition for growth [@easterly2001], and perhaps may help close the gap between developing and developed economies, that has been historicly so hard to close [@pritchett1997].
+
+## References

@@ -1,0 +1,466 @@
+---
+title: "Incomplete financial markets, suboptimal fiscal policy, and growth"
+author: "Esteban Degetau"
+date: "`r Sys.Date()`"
+format: pdf
+execute: 
+  echo: false
+  warning: false
+  cache: true
+fig-height: 5
+fig-width: 5
+bibliography: references.bib
+---
+
+What are the growth consequences of procyclical fiscal policy in emerging economies? A procyclical fiscal policy implies decreasing government spending and increasing tax rates during recessions. Indeed, fiscal procyclicality diverts from orthodox macroeconomic prescriptions. On one hand, Keynesian economics prescribes countercyclical fiscal policies to alleviate demand crises, while Neoclassical economics argues for acyclical fiscal policies. Thus, procyclical fiscal policy is suboptimal under either school of economic thought. However, the empirical regularity of procyclical fiscal policy in developing economies has been noted at least since @talvi2005.
+
+The macroeconomics literature has rationalized such observation through an incomplete financial markets argument: because developing countries face countercyclical spreads on their debt, they cannot smooth consumption through debt during recessions reliably, and thus resort to tax increases [@cuadra2010].
+
+Additional work on the procyclicality includes @mendoza2012, who provide a general equilibrium model that incorporates business cycles with sovereign default to explain why defaulting economies experience deep recessions as well. @phuccanh2018 shows that emerging economies' fiscal policy is more efficient when they also hold strong institutions, especially though crowding-in effects. @born2020 show that the effect of government spending on spreads is only increasing for high levels of withstanding debt. However, the cost of incomplete markets in terms of lost growth is yet unkown.
+
+The effect of fiscal policy on growth has been reviewed at least since @kneller1999. They find productive government spending to increase growth and distortionary taxation to decrease growth for a sample of OECD countries. Econometric estimations have advanced up to @gemmell2011 who use pooled menas group regressions to overcome endogeneity concerns. However, they also limit themselves to OECD countries.
+
+I propose studying whether fiscal policy has a differential effect on growth within developing countries. I gathered data from the World Bank and replicate the theoretical framework in @bleaney2001 as close as possible. My results are not conclusive, but they suggest that fiscal policy does not play a role in the growth of middle income countries, but it does in high income countries. This could be due to underlying problems in developing countries or the assumptions of the model.
+
+I proceed as follows. First, I describe the data and the construction of macro variables. Second, I show summary statistics and descriptive statistics by income level. Third, I show the relationship between growth and fiscal policy variables. Fourth, I estimate the effect of fiscal policy on growth using a two-way fixed effects model. Finally, I conclude with the open questions my research has raised.
+
+## Data
+
+The construction of macro variables was the toughest challenge for this project (thus far). To amplify the geographical reach of data from just OECD countries, I downloaded data from the World Bank API. @tbl-allocation shows the allocation of accounting variables to theoretical variables I used, relative to the data construction in @bleaney2001.
+
+The most crucial difference in my data allocation is expenses accounted for as *productive expenditure*. Opposed to @bleaney2001 I could not find disaggregated data for administrative services, defense expenditure, housing, or transport. Hence, my *productive expenditure* category includes only education and health expenditure.
+
+Once downloaded and categorized, the data required minimal manipulation. I cut the period of interest from 200 to 2019 to maximize sample size, but also because it allows me to update the findings in @kneller1999. The final sample consist of five-year means of fiscal, control and outcome variables.
+
+### Descriptive results
+
+@tbl-summary shows summary statistics *a la* @kneller1999. Notice the countries I exhibit as holding minimum or maximum values are from a wider range of latitudes than in @gemmell2011.[^1] Also note magnitudes are consistent with the literature.
+
+@tbl-by-income shows descriptive statistics by income level. Notice that middle income countries grew at a higher pace than high income countries, suggesting a reversal from the *Divergence, big time* days, at least within my sample of countries with neat data [@pritchett1997]. The same pattern can be observed in @fig-growth.
+
+@fig-scatter shows the relationship between growth and fiscal policy variables. Notice that all the included independent variables have different slopes for high and middle income countries. This suggests that the effect of fiscal policy on growth is different for each income level. In those simple linear regressions, growth is more responsive to fiscal policy in middle income countries than in high income countries. Interestingly, productive expenditure has a negative effect on growth in high income countries, and a null effect in middle income countries. This is puzzling, as the literature has shown the positive effects of education and health development [@banerjee2012].
+
+## Estimation
+
+To estimate the effect of fiscal policy on growth, I follow the baseline, two way fixed effect model proposed by @kneller1999. It can be written as:
+
+```{=tex}
+\begin{align}
+g_{it} = \lambda_i + \delta_t + \beta X_{it} + \epsilon_{it}
+\end{align}
+```
+where $g_{it}$ is the rate of growth of GDP per capita, $\lambda_i$ and $\delta_t$ are fixed effects for countries and period, respectively, $X_{it}$ is a vector of fiscal policy variables, and $\epsilon_{it}$ is the error term. To study whether developing countries have a different effect of fiscal policy on growth, I will estimate the model for high and middle income countries separately.
+
+Crucially, time periods are defined as five year intervals to account for the long-run effects of fiscal policy.
+
+@tbl-KBG-1998 replicates the results of @kneller1999 as closely as possible, for the updated dataset of high income countries. The most notable feature of the results is the large and positive coefficient for the budget surplus, which is consistent with the literature. It allows fiscal space to finance productive government spending, which in turn increases growth, at least in theory. Contrary to the literature, I did not find a significant effect of productive expenditure on growth. This could be caused to the differences in the construction of the variable.
+
+Note however, my regressions yield a similar goodness of fit as @kneller1999. The R-squared values are around 0.6, which is consistent with the literature.
+
+### Results
+
+@tbl-results shows the effect of fiscal policy on growth by income level, implicitly financed by non-disortionary taxes. None of the coefficients show a significant effect on growth for middle income countries. Although this could be caused by larger standard errors due to a smaller sample size, middle income countries have half the goodness of fit that high income countries have. This suggests that (i) fiscal policy is not as effective for middle income countries because of underlying problems such as high informality rates through which fiscal policy dissipates, and/or (ii) the effect of procyclical fiscal policy they usually follow on growth cannot be modeled using the same assumptions vis-a-vis high income countries.
+
+## Conclusions
+
+Because of the time limitations of this project, I will only be able to conclude what are the open questions that my research has raised. The most pressing question is whether the use of procyclical fiscal policy in developing countries has had a negative effect on their growth. My results suggest that fiscal policy does not play a role in the growth of middle income countries, but it does in high income countries. Whether this is due to the underlying problems of developing countries or the assumptions of the model is yet to be determined.
+
+## References
+
+::: {#refs}
+:::
+
+```{r}
+#| label: setup
+#| include: false
+#| cache: false
+
+rm(list = ls())
+gc()
+
+pacman::p_load(tidyverse, here, readxl, labelled, kableExtra, gtsummary, fixest, wbstats, rnaturalearth, plm, PooledMeanGroup, conflicted, stargazer, sf)
+
+conflicted::conflict_prefer("filter", "dplyr")
+conflicts_prefer(dplyr::between)
+
+theme_set(theme_minimal())
+
+```
+
+```{r}
+#| label: data
+#| include: false
+
+
+
+load(here("data/GKS.RData"))
+
+
+    
+GKS <- GKS |>
+    mutate(
+        income_level = case_when(
+            income_level_iso3c %in% c("LMC", "UMC") ~ "Middle income",
+            income_level_iso3c == "HIC" ~ "High income"
+        ) |>
+        factor(levels = c("Middle income", "High income"))
+    ) 
+
+dict <- generate_dictionary(GKS) |>
+    mutate(
+        kind = case_when(
+            str_detect(label, "tax|rev") ~ "Revenue",
+            str_detect(label, "expenditure") ~ "Expenditure",
+            str_detect(label, "growth|investment") ~ "Dependant",
+            TRUE ~ "Other"
+        )
+    )
+
+
+
+five_years <- tibble(
+    date = 2000:2019,
+    period = floor((date - 2000) / 5) + 1
+
+)
+
+theoretical_variables <- c(
+    # Control variables
+    "gdp_pc_growth",
+    "labor_growth",
+    "investment",
+    "initial_gdp",
+    
+    # Fiscal policy
+    "net_lending",  
+    "budget_surplus",
+    "distortionary_taxation",
+    "non_distortionary_taxation",
+    "other_revenues",
+    "productive_expenditure",
+    "unproductive_expenditure",
+    "other_expenditure"
+
+)
+
+long_run <- GKS |>
+    filter(between(date, 2000, 2019)) |>
+    
+    left_join(five_years, by = "date") |>
+    group_by(period, country, income_level_iso3c, iso3c, income_level) |>
+    summarise(
+        across(
+            any_of(theoretical_variables),
+            ~ mean(.x, na.rm = TRUE)
+        ),
+        initial_gdp = first(gdp_pc_usd, na_rm = T) / 1000
+    ) |>
+    ungroup() |>
+    drop_na(any_of(theoretical_variables)) |>
+    rename(date = period) |>
+    # Balance panel
+    group_by(country) |>
+    filter(n_distinct(date) == 4) |>
+    ungroup() |>
+
+    labelled::copy_labels_from(GKS) |>
+    set_variable_labels(
+        initial_gdp = "Initial p.c. GDP (thousands 2015 USD)"
+    )
+
+
+dict <- generate_dictionary(long_run) |>
+    mutate(
+        kind = case_when(
+            str_detect(label, "tax|rev") ~ "Revenue",
+            str_detect(label, "expenditure") ~ "Expenditure",
+            str_detect(label, "growth|investment|GDP") ~ "Dependant",
+            TRUE ~ "Other"
+        )
+    )
+
+long <- long_run |>
+    pivot_longer(any_of(theoretical_variables)) |>
+    left_join(dict, by = c("name" = "variable")) |>
+    mutate(
+        name = factor(name, levels = theoretical_variables)
+    )
+
+
+
+year_theoretical <- long |>
+  group_by(date, name) |>
+  summarise(countries = n_distinct(country[!is.na(value)])) |>
+  ungroup() 
+
+```
+
+{{< pagebreak >}}
+
+## Tables and figures
+
+```{r}
+#| label: fig-countries
+#| fig-cap: Countries by income group
+#| fig-height: 4
+#| fig-width: 6
+
+ne <- ne_countries(returnclass = "sf") 
+
+available <- long_run |>
+    right_join(ne, by = c("iso3c" = "iso_a3_eh")) 
+
+view(long_run)
+
+view(available)
+
+available |>
+    distinct(income_level, iso3c, geometry) |>
+    st_sf() |>
+    
+    ggplot(aes(fill = income_level)) +
+    geom_sf() +
+    labs(fill = "") +
+    theme(legend.position = "bottom") +
+    scale_fill_viridis_d(option = "E")
+
+
+
+```
+
+```{r}
+#| label: fig-growth
+#| fig-cap: Growth by income level
+
+GKS |>
+    group_by(
+        income_level, date
+    ) |>
+    summarise(
+        gdp_pc_growth = mean(gdp_pc_growth, na.rm = T)
+    ) |>
+    ungroup() |>
+    drop_na(gdp_pc_growth, income_level) |>
+    ggplot(aes(date, gdp_pc_growth, color = income_level)) +
+    geom_smooth(se = F) +
+    geom_vline(xintercept = 2019, linetype = "dashed") +
+    geom_vline(xintercept = 2000, linetype = "dashed") +
+    labs(
+        x = "",
+        y = "GDP p.c. growth (%)",
+        color = ""
+    ) +
+    theme(legend.position = "bottom")
+
+```
+
+```{r}
+#| label: fig-scatter
+#| fig-cap: Long-run determinants of growth
+#| layout-ncol: 2
+#| fig-subcap: 
+#|  - "Productive expenditure"
+#|  - "Non-distortionary taxation" 
+#|  - "Budget surplus"
+#|  - "Net lending"
+
+long_run |>
+    drop_na(income_level) |>
+    ggplot(aes(productive_expenditure, gdp_pc_growth, color = income_level)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = F) +
+    labs(
+        x = "Productive expenditure (% of GDP)",
+        y = "GDP p.c. growth (%)",
+        color = ""
+    ) +
+    theme(legend.position = "bottom")
+
+
+long_run |>
+    drop_na(income_level) |>
+    ggplot(aes(non_distortionary_taxation, gdp_pc_growth, color = income_level)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = F) +
+    labs(
+        x = "Non-distortionary taxation (% of GDP)",
+        y = "GDP p.c. growth (%)",
+        color = ""
+    ) +
+    theme(legend.position = "bottom")
+
+long_run |>
+    ggplot(aes(budget_surplus, gdp_pc_growth, color = income_level))+
+    geom_point() +
+    geom_smooth(method = "lm", se = F) +
+    labs(
+        x = "Budget surplus (% of GDP)",
+        y = "GDP p.c. growth (%)",
+        color = ""
+    ) +
+    theme(legend.position = "bottom")
+
+long_run |>
+    ggplot(aes(net_lending, gdp_pc_growth, color = income_level))+
+    geom_point() +
+    geom_smooth(method = "lm", se = F) +
+    labs(
+        x = "Net lending (% of GDP)",
+        y = "GDP p.c. growth (%)",
+        color = ""
+    ) +
+    theme(legend.position = "bottom")
+
+```
+
+```{r}
+#| label: tbl-summary
+#| tbl-cap: Summary statistics (% of GDP unless noted)
+
+
+long |>
+    group_by(label, kind) |>
+    summarise(
+        Mean = mean(value, na.rm = TRUE),
+        SD = sd(value, na.rm = TRUE),
+        Min = min(value, na.rm = TRUE) |> round(2),
+        `Min Country` = country[which.min(value)],
+
+        Max = max(value, na.rm = TRUE) |> round(2),
+        `Max Country` = country[which.max(value)]
+    ) |>
+    arrange(kind) |>
+    select(!kind) |>
+    rename(Variable = label) |>
+    kable(digits = 2, format.args = list(big.mark = ",")) |>
+    # Set font size
+    kableExtra::kable_styling(font_size = 10)
+
+
+```
+
+```{r}
+#| label: tbl-by-income
+#| tbl-cap: Summary statistics by income level (% of GDP unless noted)
+
+
+
+long_run |>
+    select(country, any_of(theoretical_variables), income_level) |>
+    group_by(country, income_level) |>
+    summarise(across(any_of(theoretical_variables), ~ mean(.x, na.rm = TRUE))) |>
+    ungroup() |>
+    select(!country) |>
+    copy_labels_from(long_run) |>
+    tbl_summary(
+        by = income_level,
+        statistic = list(all_continuous() ~ "{mean} ({sd})")
+    ) |>
+    as_kable_extra(booktabs = T) |>
+    kable_styling(font_size = 10)
+
+
+```
+
+```{r}
+#| label: tbl-allocation
+#| tbl-cap: Allocation of theoretical variables
+#| cache: false
+
+allocation <- read_excel(here("data/Allocation.xlsx")) 
+
+view(allocation)
+
+# Show NAs as empty cells in kable outputs
+options(knitr.kable.NA = "")
+
+allocation |>
+    kable() |>
+    kableExtra::column_spec(1, width = "4cm") |>
+    column_spec(2:3, width = "5cm") |>
+    kable_styling("striped") 
+
+
+```
+
+```{r}
+#| label: tbl-KBG-1998
+#| tbl-cap: "Two-Way fixed effects results for high income countries following KBG (1998)"
+#| results: asis
+
+
+fixest::setFixest_dict(
+    "gdp_pc_growth" = "GDP per capita growth",
+    "investment" = "Investment",
+    "labor_growth" = "Labor growth",
+    "distortionary_taxation" = "Distortionary taxation",
+    "non_distortionary_taxation" = "Non-distortionary taxation",
+    "other_revenues" = "Other revenues",
+    "productive_expenditure" = "Productive expenditure",
+    "unproductive_expenditure" = "Unproductive expenditure",
+    "other_expenditure" = "Other expenditure",
+    "initial_gdp" = "Initial GDP p.c.",
+    "budget_surplus" = "Budget surplus",
+    "net_lending" = "Net lending",
+    "country" = "Country",
+    "date" = "Year",
+    income_level = "Income level"
+)
+
+data_kbg <- long_run |>
+    filter(income_level_iso3c == "HIC")
+
+
+kbg1 <- data_kbg |>
+    feols(
+        gdp_pc_growth ~ initial_gdp + investment + labor_growth + net_lending + distortionary_taxation + other_revenues + budget_surplus + productive_expenditure + unproductive_expenditure + other_expenditure | country + date
+    )
+
+kbg2 <- data_kbg |>
+    feols(
+        gdp_pc_growth ~ initial_gdp + investment + labor_growth + net_lending + distortionary_taxation + non_distortionary_taxation + other_revenues +  budget_surplus +productive_expenditure + other_expenditure | country + date
+    )
+
+
+kbg3 <- data_kbg |>
+    feols(
+        gdp_pc_growth ~ initial_gdp + investment + labor_growth + net_lending + distortionary_taxation  + other_revenues + budget_surplus + productive_expenditure + other_expenditure | country + date
+    )
+
+
+etable(
+    kbg1,
+    kbg2,
+    kbg3,
+    tex = T,
+    coefstat = "tstat",
+    fitstat = ~ ar2 + n,
+    headers = list("Omitted Fiscal Variable:" = list("Non-dist. tax.", "Unprod. exp.", "Non-dist. tax. + Unprod. exp."))
+) 
+
+```
+
+```{r}
+#| label: tbl-results
+#| tbl-cap: "Regression results by income level"
+#| results: asis
+
+
+        
+
+long_run |>
+    feols(
+        gdp_pc_growth ~ initial_gdp + investment + labor_growth + net_lending + distortionary_taxation + other_revenues + budget_surplus + productive_expenditure + unproductive_expenditure + other_expenditure | country + date,
+        fsplit = ~ income_level
+    ) |>
+    etable(
+        tex = T,
+        coefstat = "tstat",
+        fitstat = ~ ar2 + n
+    )
+
+
+
+```
+
+[^1]: @fig-countries shows the countries in my final sample in a map.
